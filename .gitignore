@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Model files
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.pkl
+
+# Data
+data/raw/
+data/interim/
+#data/processed/
+
+# Artifacts
+artifacts/
+
+# Experiment outputs
+outputs/
+runs/
+
+# Temporary files
+temp/
+tmp/
+
+# Environment variables
+.env
