@@ -1,0 +1,13 @@
+numpy
+pandas
+matplotlib
+opencv-python
+Pillow
+PyYAML
+tqdm
+scikit-learn
+torch
+torchvision
+pycocotools
+albumentations
+pytest
