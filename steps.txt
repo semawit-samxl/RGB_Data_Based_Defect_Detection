@@ -2,4 +2,7 @@ data validation - make sure data is not corrupted and contains images
 data preparation : unzip and extract to intrim
 create data profile in data validation - numbber of anaoatatd images and labels
 class profile- check the class distribution  of all the data
+create data spliter to train test validate spliter
+
+# in src /model training/train.yolo.py create yolo traing code.
 
