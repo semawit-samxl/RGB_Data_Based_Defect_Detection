@@ -4,10 +4,9 @@ matplotlib
 opencv-python
 Pillow
 PyYAML
+ultralytics
 tqdm
-scikit-learn
-torch
-torchvision
+scikit-learnpip
 pycocotools
 albumentations
 pytest
