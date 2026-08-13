@@ -2,6 +2,7 @@ import os
 import yaml
 import torch
 import os
+import csv
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
 
@@ -17,6 +18,19 @@ from src.model_training.faster_rcnn_model import (
     create_model
 )
 
+
+csv_file = "models/training_metrics.csv"
+
+with open(csv_file, "w", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerow([
+        "epoch",
+        "total_loss",
+        "loss_classifier",
+        "loss_box_reg",
+        "loss_objectness",
+        "loss_rpn_box_reg"
+    ])
 
 def train_model():
 
@@ -75,17 +89,20 @@ def train_model():
     best_loss = float("inf")
 
     # Print dataset information
-    print(
-        f"Dataset Size: {len(dataset)}"
-    )
+    print(f"Dataset Size: {len(dataset)}")
 
-    print(
-        f"Batches: {len(dataloader)}"
-    )
+    print(f"Batches: {len(dataloader)}")
 
-    print(
-        f"Device: {device}"
-    )
+    print(f"Device: {device}")
+
+
+
+    # Initialize best loss
+    best_loss = float("inf")
+
+    # Store loss history
+
+    loss_history = []
 
     # Start training
     for epoch in range(
@@ -125,6 +142,24 @@ def train_model():
                 targets
             )
 
+
+            epoch_classifier_loss += loss_dict[
+                    "loss_classifier"
+                ].item()
+
+            epoch_box_reg_loss += loss_dict[
+                    "loss_box_reg"
+                ].item()
+
+            epoch_objectness_loss += loss_dict[
+                    "loss_objectness"
+                ].item()
+
+            epoch_rpn_box_loss += loss_dict[
+                    "loss_rpn_box_reg"
+                ].item()
+
+
             # Calculate total loss
             total_loss = sum(
                 loss
@@ -159,10 +194,43 @@ def train_model():
                 )
 
         # Compute average loss
-        avg_loss = (
-            epoch_loss /
-            len(dataloader)
-        )
+            avg_loss = epoch_loss / len(dataloader)
+
+
+            num_batches = len(dataloader)
+
+            avg_loss = epoch_loss / num_batches
+
+            avg_classifier_loss = (
+                epoch_classifier_loss / num_batches
+            )
+
+            avg_box_reg_loss = (
+                epoch_box_reg_loss / num_batches
+            )
+
+            avg_objectness_loss = (
+                epoch_objectness_loss / num_batches
+            )
+
+            avg_rpn_box_loss = (
+                epoch_rpn_box_loss / num_batches
+            )
+
+          # Save epoch loss
+            loss_history.append(avg_loss)
+
+            with open(csv_file, "a", newline="") as f:
+                writer = csv.writer(f)
+
+                writer.writerow([
+                    epoch + 1,
+                    avg_loss,
+                    avg_classifier_loss,
+                    avg_box_reg_loss,
+                    avg_objectness_loss,
+                    avg_rpn_box_loss
+                ])
 
         # Print epoch summary
         print(
@@ -177,13 +245,12 @@ def train_model():
         torch.save(
             {
                 "epoch": epoch,
-                "model_state_dict":
-                    model.state_dict(),
-                "optimizer_state_dict":
-                    optimizer.state_dict(),
-                "loss": avg_loss
+                "model_state_dict": model.state_dict(),
+                "optimizer_state_dict": optimizer.state_dict(),
+                "loss": avg_loss,
+                "loss_history": loss_history
             },
-            "models/last_faster_rcnn.pth"
+                "models/last_faster_rcnn.pth"
         )
 
         # Save best checkpoint
@@ -194,14 +261,14 @@ def train_model():
             torch.save(
                 {
                     "epoch": epoch,
-                        "model_state_dict":
-                            model.state_dict(),
-                        "optimizer_state_dict":
-                            optimizer.state_dict(),
-                            "loss": avg_loss
+                    "model_state_dict": model.state_dict(),
+                    "optimizer_state_dict": optimizer.state_dict(),
+                    "loss": avg_loss,
+                    "loss_history": loss_history
                 },
                 "models/best_faster_rcnn.pth"
             )
+            
 
         print( 
               f"New best model saved "
