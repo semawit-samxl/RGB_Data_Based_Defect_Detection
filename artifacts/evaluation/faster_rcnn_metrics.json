@@ -11,11 +11,36 @@
     "mar_small": 1.0,
     "mar_medium": 0.9954780340194702,
     "mar_large": -1.0,
-    "map_per_class": -1.0,
-    "mar_100_per_class": -1.0,
+    "map_per_class": [
+        1.0,
+        0.9928781390190125,
+        0.9800811409950256
+    ],
+    "mar_100_per_class": [
+        1.0,
+        0.996832549571991,
+        0.9896016120910645
+    ],
     "classes": [
         1,
         2,
         3
+    ],
+    "class_metrics": [
+        {
+            "class_name": "Blob",
+            "ap": 1.0,
+            "recall": 1.0
+        },
+        {
+            "class_name": "Underextrusion",
+            "ap": 0.9928781390190125,
+            "recall": 0.996832549571991
+        },
+        {
+            "class_name": "Sagging",
+            "ap": 0.9800811409950256,
+            "recall": 0.9896016120910645
+        }
     ]
 }

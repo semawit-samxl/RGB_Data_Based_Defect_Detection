@@ -186,21 +186,13 @@ def evaluate():
     print("\nEvaluation Results")
     print("-" * 30)
 
-    print(
-        f"mAP: {float(results['map']):.4f}"
-    )
+    print(f"mAP: {float(results['map']):.4f}")
 
-    print(
-        f"mAP50: {float(results['map_50']):.4f}"
-    )
+    print(f"mAP50: {float(results['map_50']):.4f}")
 
-    print(
-        f"mAP75: {float(results['map_75']):.4f}"
-    )
+    print(f"mAP75: {float(results['map_75']):.4f}" )
 
-    print(
-        f"Mean Recall: {float(results['mar_100']):.4f}"
-    )
+    print(f"Mean Recall: {float(results['mar_100']):.4f}" )
 
     return results
 
