@@ -68,7 +68,9 @@ def evaluate():
     model.eval()
 
     # Evaluation metric
-    metric = MeanAveragePrecision()
+    metric = MeanAveragePrecision(
+    class_metrics=True
+         )
 
     with torch.no_grad():
 
@@ -105,13 +107,37 @@ def evaluate():
 
     results = metric.compute()
 
+    CLASS_NAMES = {
+        1: "Blob",
+        2: "Underextrusion",
+        3: "Sagging"
+    }
+
+    classes = results["classes"].tolist()
+    map_per_class = results["map_per_class"].tolist()
+    mar_per_class = results["mar_100_per_class"].tolist()
+
+    print("\nClass-wise Performance")
+    print("-" * 50)
+
+    for cls, ap, recall in zip(
+        classes,
+        map_per_class,
+        mar_per_class
+    ):
+        print(
+            f"{CLASS_NAMES[cls]:15s} "
+            f"AP={ap:.4f} "
+            f"={recall:.4f}"
+        )
+
     # Create evaluation directory
     os.makedirs(
         "artifacts/evaluation",
         exist_ok=True
     )
 
-    # Convert tensors to JSON serializable values
+    # Create JSON dictionary
     results_dict = {}
 
     for key, value in results.items():
@@ -129,6 +155,21 @@ def evaluate():
 
         else:
             results_dict[key] = value
+
+    results_dict["class_metrics"] = []
+
+    for cls, ap, recall in zip(
+        classes,
+        map_per_class,
+        mar_per_class
+    ):
+        results_dict["class_metrics"].append(
+            {
+                "class_name": CLASS_NAMES[cls],
+                "ap": float(ap),
+                "recall": float(recall)
+            }
+        )
 
     # Save metrics
     with open(
