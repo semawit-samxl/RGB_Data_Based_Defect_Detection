@@ -1,0 +1,24 @@
+Training 
+
+Model summary (fused): 73 layers, 3,006,233 parameters, 0 gradients, 8.1 GFLOPs
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 176/176 11.1it/s 15.9s
+                   all       5632      17834          1      0.998      0.995      0.995
+                  Blob       1247       1247          1          1      0.995      0.995
+        Underextrusion       1402       2431          1      0.998      0.995      0.994
+               Sagging       4775      14156          1      0.996      0.995      0.995
+
+Val
+Model summary (fused): 73 layers, 3,006,233 parameters, 0 gradients, 8.1 GFLOPs
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 176/176 11.1it/s 15.9s
+                   all       5632      17834          1      0.998      0.995      0.995
+                  Blob       1247       1247          1          1      0.995      0.995
+        Underextrusion       1402       2431          1      0.998      0.995      0.994
+               Sagging       4775      14156          1      0.996      0.995      0.995
+
+prediction
+
+
+
+
+
+#rcnn 

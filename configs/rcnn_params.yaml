@@ -56,3 +56,4 @@ paths:
   last_model: models/last_faster_rcnn.pth
 
   onnx_model: models/faster_rcnn.onnx
+  
