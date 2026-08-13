@@ -1,0 +1,241 @@
+import os
+import csv
+import yaml
+import torch
+import matplotlib.pyplot as plt
+
+from torch.utils.data import DataLoader
+
+from src.data_preparation.faster_rcnn_dataset import (
+    ThermalDataset,
+    collate_fn
+)
+
+from src.model_training.faster_rcnn_model import (
+    create_model
+)
+
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+
+
+def train_model():
+
+    # Load configuration
+    with open(
+        "configs/rcnn_params.yaml",
+        "r"
+    ) as file:
+
+        params = yaml.safe_load(file)
+
+    # Select device
+    device = torch.device(
+        "cuda"
+        if torch.cuda.is_available()
+        else "cpu"
+    )
+
+    # Create dataset
+    dataset = ThermalDataset(
+        image_dir="data/processed/images/train",
+        label_dir="data/processed/labels/train"
+    )
+
+    # Create dataloader
+    dataloader = DataLoader(
+        dataset,
+        batch_size=params["training"]["batch_size"],
+        shuffle=True,
+        collate_fn=collate_fn,
+        num_workers=params["training"].get(
+            "num_workers",
+            0
+        )
+    )
+
+    # Create model
+    model = create_model()
+
+    # Move model to device
+    model.to(device)
+
+    # Create optimizer
+    optimizer = torch.optim.Adam(
+        model.parameters(),
+        lr=params["training"]["learning_rate"]
+    )
+
+    # Create model directory
+    os.makedirs(
+        "models",
+        exist_ok=True
+    )
+
+    # CSV file
+    csv_file = "models/training_metrics.csv"
+
+    with open(csv_file, "w", newline="") as f:
+        writer = csv.writer(f)
+
+        writer.writerow([
+            "epoch",
+            "total_loss",
+            "loss_classifier",
+            "loss_box_reg",
+            "loss_objectness",
+            "loss_rpn_box_reg"
+        ])
+
+    # Initialize best loss
+    best_loss = float("inf")
+
+    # Store loss history
+    loss_history = []
+
+    # Print dataset information
+    print(f"Dataset Size: {len(dataset)}")
+    print(f"Batches: {len(dataloader)}")
+    print(f"Device: {device}")
+
+    # Start training
+    for epoch in range(
+        params["training"]["epochs"]
+    ):
+
+        model.train()
+
+        # Epoch accumulators
+        epoch_loss = 0.0
+
+        epoch_classifier_loss = 0.0
+        epoch_box_reg_loss = 0.0
+        epoch_objectness_loss = 0.0
+        epoch_rpn_box_loss = 0.0
+
+        # Iterate through batches
+        for batch_idx, (
+            images,
+            targets
+        ) in enumerate(dataloader):
+
+            # Move images to device
+            images = [
+                image.to(device)
+                for image in images
+            ]
+
+            # Move targets to device
+            targets = [
+                {
+                    k: v.to(device)
+                    for k, v in target.items()
+                }
+                for target in targets
+            ]
+
+            # Forward pass
+            loss_dict = model(
+                images,
+                targets
+            )
+
+            # Track individual losses
+            epoch_classifier_loss += (
+                loss_dict["loss_classifier"].item()
+            )
+
+            epoch_box_reg_loss += (
+                loss_dict["loss_box_reg"].item()
+            )
+
+            epoch_objectness_loss += (
+                loss_dict["loss_objectness"].item()
+            )
+
+            epoch_rpn_box_loss += (
+                loss_dict["loss_rpn_box_reg"].item()
+            )
+
+            # Total loss
+            total_loss = sum(
+                loss
+                for loss in loss_dict.values()
+            )
+
+            optimizer.zero_grad()
+
+            total_loss.backward()
+
+            optimizer.step()
+
+            epoch_loss += total_loss.item()
+
+            # Batch progress
+            if batch_idx % 50 == 0:
+
+                print(
+                    f"Epoch {epoch + 1} "
+                    f"Batch {batch_idx}/{len(dataloader)} "
+                    f"Loss: {total_loss.item():.4f}"
+                )
+
+       
+        # Epoch stat
+       
+
+        num_batches = len(dataloader)
+
+        avg_loss = (
+            epoch_loss / num_batches
+        )
+
+        avg_classifier_loss = (
+            epoch_classifier_loss /
+            num_batches
+        )
+
+        avg_box_reg_loss = (
+            epoch_box_reg_loss /
+            num_batches
+        )
+
+        avg_objectness_loss = (
+            epoch_objectness_loss /
+            num_batches
+        )
+
+        avg_rpn_box_loss = (
+            epoch_rpn_box_loss /
+            num_batches
+        )
+
+        # Store history
+        loss_history.append(avg_loss)
+
+        # Save metrics to CSV
+        with open(csv_file, "a", newline="") as f:
+
+            writer = csv.writer(f)
+
+            writer.writerow([
+                epoch + 1,
+                avg_loss,
+                avg_classifier_loss,
+                avg_box_reg_loss,
+                avg_objectness_loss,
+                avg_rpn_box_loss
+            ])
+
+        print(
+            f"Epoch {epoch + 1}/"
+            f"{params['training']['epochs']} "
+            f"Average Loss: "
+            f"{avg_loss:.4f}"
+        )
+
+        # Save latest checkpoint
+        torch.save(
+            {
+                "epoch": epoch,
+                "model_state_dict":
+           
