@@ -39,11 +39,11 @@ data/interim/
 #data/processed/
 
 # Artifacts
-artifacts/
+#artifacts/
 
 # Experiment outputs
 outputs/
-runs/
+#runs/
 
 # Temporary files
 temp/
